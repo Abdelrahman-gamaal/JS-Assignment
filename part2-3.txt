@@ -1,0 +1,11 @@
+1- 
+== 
+دي بتقارن ال values ببعض 
+ولو فيه values مش نفس ال
+type  
+بتعمل 
+type corecion 
+-------------
+2- 
+=== 
+compare values and type 

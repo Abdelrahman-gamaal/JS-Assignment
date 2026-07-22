@@ -1,0 +1,9 @@
+type corecion 
+
+javascript automaticaly convert the type of variable 
+
+
+---------------
+type conversion 
+
+converting the type manually by us 

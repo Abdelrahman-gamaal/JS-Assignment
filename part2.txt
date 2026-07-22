@@ -1,0 +1,20 @@
+1- 
+for of 
+بستخدمها عشان اجيب ال values من 
+array 
+من غير ما احتاج لل 
+index 
+
+forEach 
+دي ميثود في ال 
+array 
+بستخدمها عشان الف علي عناصر ال
+array برضو 
+بتاخد
+(element,index,array) 
+زي زيها ال map 
+لكن الفرق ان 
+map بترجع newarray
+ال forEach مبترجعش 
+
+برضو مقدرش استخدم معاها continre or break ,just return only
