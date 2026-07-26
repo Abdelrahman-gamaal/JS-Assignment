@@ -1,0 +1,14 @@
+hoisiting 
+when you declare a variable or a function 
+the JS raise it to haut  
+
+the var take an undefined value until he reach the line he declared in 
+
+let ,const 
+becomes un unitilized and it called TDZ
+ until they reach the line they declared in 
+
+if you used var before the line he declared in 
+the code will not throw an error and will run and give you "undefined" 
+
+but the let and const will throw an error if you used them before intilization
