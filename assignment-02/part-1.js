@@ -1,4 +1,7 @@
 const path = require("path");
+const fs = require("fs");
+const { EventEmitter } = require("events");
+const event = new EventEmitter();
 
 function logs() {
   return {
@@ -50,4 +53,69 @@ function resolve(filePath) {
 function joinTwoPath(file1, file2) {
   return path.join(file1, file2);
 }
-console.log(joinTwoPath("/folder1", "folder2/file.txt"));
+//console.log(joinTwoPath("/folder1", "folder2/file.txt"));
+//=============================
+//10
+
+function delet(filePath) {
+  try {
+    fs.unlinkSync(path.basename(filePath));
+    console.log(`${path.basename(filePath)} is deleted`);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+//delet(path.resolve("./m.js"));
+//===========
+//11
+function createDIr(fileName) {
+  try {
+    fs.mkdirSync(`./${fileName}`, { recursive: true });
+    console.log("success");
+  } catch (e) {
+    console.log(e);
+  }
+}
+//createDIr("images");
+//=====================================
+//12
+function emit() {
+  event.on("start", () => {
+    console.log("welcone event triggered");
+  });
+  event.emit("start");
+}
+
+//emit();
+//==============================
+//13
+
+event.on("login", (username) => {
+  console.log(`User logged in :${username}`);
+});
+
+// event.emit("login", "Ahmed");
+//=========================================
+//14
+function read(fileName) {
+  let data = fs.readFileSync(path.resolve(`./${fileName}`), {
+    encoding: "utf8",
+  });
+  console.log(`the file content => ${data}`);
+}
+
+//read("data.txt");
+//======================
+//15
+function write(fileName) {
+  fs.writeFile(path.resolve(`./${fileName}`), "async save", (err) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("written successfully");
+  });
+}
+
+write("write.txt");
