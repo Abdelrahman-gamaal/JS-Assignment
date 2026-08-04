@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const { EventEmitter } = require("events");
+const { platform } = require("os");
 const event = new EventEmitter();
 
 function logs() {
@@ -118,4 +120,37 @@ function write(fileName) {
   });
 }
 
-write("write.txt");
+//write("write.txt");
+//====================
+function dirExist(fileName) {
+  console.log(fs.existsSync(path.resolve(`./${fileName}`)));
+}
+//dirExist("notes.txt");
+//=============
+function info() {
+  console.log({
+    platform: os.platform(),
+    Arch: os.arch(),
+  });
+}
+//info();
+//=================
+
+function readStream(fileName) {
+  const stream = fs.createReadStream(path.resolve(`./${fileName}`));
+  stream.on("data", (chunk) => {
+    console.log(chunk.toString());
+  });
+}
+//readStream("big.txt");
+//=================================
+function copy(file1, file2) {
+  const readStream = fs.createReadStream(`./${train.txt}`);
+  const writeStream = fs.createWriteStream(`./${copy.txt}`);
+
+  readStream.on("data", (chunk) => {
+    writeStream.write(chunk);
+  });
+}
+//copy('train.txt','copy.txt')
+//=================
