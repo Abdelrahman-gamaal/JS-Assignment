@@ -4,6 +4,12 @@ const path = require("path");
 const { json } = require("stream/consumers");
 const port = 3000;
 
+function userExist(id, userData) {
+  const exist = userData.findIndex((user) => user.id === Number(id));
+  if (exist === -1) return -1;
+  return exist;
+}
+
 // read file
 
 function readFile(fileName) {
@@ -17,36 +23,50 @@ function writeFile(fileName, data) {
 }
 //============validation input
 
-function check(name, age, email) {
+function check(args) {
   let errors = [];
   //name validate
-  if (
-    !name ||
-    name.length <= 1 ||
-    typeof name !== "string" ||
-    name.trim() == ""
-  ) {
-    errors.push("{string must be string and bigger than 1 character}");
-  }
-  //age validate
-  if (
-    age === undefined ||
-    typeof age !== "number" ||
-    Number.isNaN(age) ||
-    age <= 18 ||
-    age > 100
-  ) {
-    errors.push(
-      "{age must be a valid number and bigger than 18 and smaller than 100}",
-    );
-  }
-  // email validate
-  if (
-    email === undefined ||
-    typeof email !== "string" ||
-    !email.includes("@")
-  ) {
-    errors.push("{email must be string and contains @}");
+  for (let key in args) {
+    if (key === "name") {
+      console.log("name");
+      if (
+        typeof args["name"] !== "string" ||
+        !args["name"] ||
+        args["name"].trim() == "" ||
+        args["name"].length <= 1
+      ) {
+        errors.push("{string must be string and bigger than 1 character}");
+      }
+    }
+
+    //age validate
+    if (key === "age") {
+      console.log("age");
+
+      if (
+        typeof args["age"] !== "number" ||
+        args["age"] === undefined ||
+        Number.isNaN(args["age"]) ||
+        args["age"] <= 18 ||
+        args["age"] > 100
+      ) {
+        errors.push(
+          "{age must be a valid number and bigger than 18 and smaller than 100}",
+        );
+      }
+    }
+    // email validate
+    if (key === "email") {
+      console.log("email");
+
+      if (
+        args["email"] === undefined ||
+        typeof args["email"] !== "string" ||
+        !args["email"].includes("@")
+      ) {
+        errors.push("{email must be string and contains @}");
+      }
+    }
   }
 
   return errors;
@@ -66,6 +86,7 @@ function id_check() {
 }
 
 //==============================================
+//server
 const server = http.createServer((req, res) => {
   let reqData = "";
   req.on("data", (chunk) => {
@@ -73,17 +94,19 @@ const server = http.createServer((req, res) => {
   });
 
   req.on("end", () => {
-    //post
+    //create user ============================================
     if (req.method === "POST" && req.url === "/users") {
       let readfileData = JSON.parse(readFile("users.json"));
-      let { name, age, email } = JSON.parse(reqData);
+      let userData = JSON.parse(reqData);
 
-      const validateInput = check(name, age, email);
+      const validateInput = check(userData);
 
       if (validateInput.length > 0) {
         return res.end(JSON.stringify(validateInput));
       }
-      let existing = readfileData.findIndex((user) => user.email === email);
+      let existing = readfileData.findIndex(
+        (user) => user.email === userData.email,
+      );
       if (existing !== -1) {
         return res.end(JSON.stringify("User existing alread"));
       }
@@ -92,9 +115,7 @@ const server = http.createServer((req, res) => {
 
       const newUser = {
         id: newID,
-        name,
-        age,
-        email,
+        ...userData,
       };
       readfileData.push(newUser);
       writeFile("users.json", readfileData);
@@ -111,18 +132,21 @@ const server = http.createServer((req, res) => {
           2,
         ),
       );
-    } else if (req.method === "GET") {
+    } //======================================================
+    //get all data and user data =====================
+    else if (req.method === "GET") {
       let readFileData = JSON.parse(readFile("users.json"));
       let data = req.url.split("/");
+
       if (data[2]) {
-        console.log(data);
-        console.log(reqData);
         let id = Number(data[2]);
         let userID = readFileData.find((user) => user.id === id);
+
         if (userID) {
           res.writeHead(200, { "Content-Type": "application/json" });
           return res.end(JSON.stringify(userID));
         }
+
         return res.end(
           JSON.stringify({
             message: "user not Exist",
@@ -132,6 +156,66 @@ const server = http.createServer((req, res) => {
       console.log("refvnd");
 
       return res.end(JSON.stringify(readFileData));
+    }
+    //=========================================
+    // DELETE USER
+    else if (req.method === "DELETE") {
+      let readFileData = JSON.parse(readFile("users.json"));
+      let id = req.url.split("/");
+
+      id = Number(id[2]);
+      const exist = userExist(id, readFileData);
+
+      if (exist === -1) {
+        return res.end(
+          JSON.stringify({
+            msg: "User not Exist",
+          }),
+        );
+      }
+
+      readFileData.splice(exist, 1);
+
+      writeFile("users.json", readFileData);
+      res.writeHead(200, { "Content-Type": "application/json" });
+
+      return res.end(
+        JSON.stringify({
+          msg: "User deleted successfully",
+        }),
+      );
+    }
+    //============================================================
+    else if (req.method === "PATCH") {
+      let readFileData = JSON.parse(readFile("users.json"));
+      let id = req.url.split("/");
+      id = Number(id[2]);
+
+      let userFind = readFileData.find((user) => user.id === id);
+
+      if (!userFind) {
+        return res.end(
+          JSON.stringify({
+            msg: "User not Exist",
+          }),
+        );
+      }
+
+      let body = JSON.parse(reqData);
+      console.log(body);
+      let errors = check(body);
+      console.log(errors);
+      if (errors.length > 0) {
+        return res.end(JSON.stringify(errors));
+      }
+
+      Object.assign(userFind, body);
+      writeFile("users.json", readFileData);
+      return res.end(
+        JSON.stringify({
+          msg: "data updated successfuully",
+        }),
+      );
     }
   });
 });
