@@ -64,7 +64,7 @@ app.get("/user", (req, res) => {
 app.post("/user", (req, res) => {
   //validation
 
-  let errors = validateUpdateUser(req.body);
+  let errors = validateCreateUser(req.body);
   if (errors.length > 0) {
     return res.status(404).json(errors);
   }
