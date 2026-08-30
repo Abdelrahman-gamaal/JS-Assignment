@@ -478,7 +478,71 @@ app.get("/reports/sales", async (req, res) => {
     data: result,
   });
 });
+//===========================
+// bigest stock
+//========================================================
 
+app.get("/api/products/stock", async (req, res) => {
+  const [result] = await db.query(
+    "SELECT p_name,Stock_Quantity FROM products WHERE Stock_Quantity = (SELECT MAX(Stock_Quantity)FROM products)",
+  );
+
+  if (result.length === 0) {
+    return res.status(404).json({
+      message: "there is no product",
+    });
+  }
+  return res.status(200).json({
+    data: result,
+  });
+});
+//=======================================================
+//suppliers  start with f
+
+app.get("/api/report/suppliers", async (req, res) => {
+  const [result] = await db.query(
+    "SELECT * FROM suppliers WHERE supplier_name  LIKE 'F%'",
+  );
+  if (result.length === 0) {
+    return res.status(404).json({
+      message: "no suppliers start with f",
+    });
+  }
+  return res.status(200).json({
+    data: result,
+  });
+});
+//===================
+//unsold products
+app.get("/api/report/unsold-products", async (req, res) => {
+  const [result] = await db.query(`
+    SELECT products.p_id, products.p_name, products.price, products.Stock_Quantity
+    FROM products
+    LEFT JOIN sales
+      ON products.p_id = sales.product_id
+    WHERE sales.product_id IS NULL
+  `);
+  return res.status(200).json({
+    data: result,
+  });
+});
+//============================================================================
+/// get all sales Product include  name Quantity sold Sale date
+app.get("/api/reports/sales", async (req, res) => {
+  const [result] = await db.query(`
+    SELECT
+      products.p_name,
+      sales.quantity_sold,
+      sales.sale_date
+    FROM sales
+    INNER JOIN products
+      ON sales.product_id = products.p_id
+  `);
+
+  res.status(200).json({
+    message: result,
+  });
+});
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
