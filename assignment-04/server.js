@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const db = require("./db");
+
 const {
   supplierSchema,
   udpateSupplierSchema,
@@ -58,8 +59,7 @@ app.get("/suppliers", async (req, res) => {
   return res.status(200).json({
     data: data,
   });
-});
-//=============================================================================
+}); //=============================================================================
 
 //=========================================================
 app.patch("/suppliers/:id", async (req, res) => {
@@ -272,6 +272,7 @@ app.delete("/products/:id", async (req, res) => {
 //sales
 //===========================================================
 
+//==================================
 // record a sale
 
 app.post("/sales", async (req, res) => {
@@ -343,6 +344,141 @@ app.post("/sales", async (req, res) => {
     data: data,
   });
 });
+//========================================================
+//retreive all data
+
+app.get("/sales", async (req, res) => {
+  const [result] = await db.query("SELECT * FROM sales");
+  if (result === 0) {
+    return res.status(404).json({
+      message: "no sales rcorded yet",
+    });
+  }
+  return res.status(200).json({
+    data: result,
+  });
+});
+//==========================================================
+// retrive sales for a product
+app.get("/sales/:id", async (req, res) => {
+  // validation on id
+  const { error, value: p_id } = idSchema.validate(req.params.id);
+  if (error) {
+    return res.status(400).json({
+      message: error.details[0].message,
+    });
+  }
+  // check if product exist
+  const [productExist] = await db.query(
+    "SELECT p_id FROM products WHERE p_id=?",
+    [p_id],
+  );
+  if (productExist.length === 0) {
+    return res.status(404).json({
+      message: "product not found",
+    });
+  }
+
+  const [data] = await db.query(
+    "SELECT  products.p_name, sales.id, sales.quantity_sold , sales.sale_date FROM sales inner join products on sales.product_id=products.p_id WHERE products.p_id=?",
+    [p_id],
+  );
+  if (data.length === 0) {
+    return res.status(404).json({
+      message: "no sales for this product exist",
+    });
+  }
+  return res.status(200).json({
+    data: data,
+  });
+});
+
+//=====================================================
+//=====================================================
+
+//modifacation
+//=============================================================
+app.patch("/products/add-category", async (req, res) => {
+  const [result] = await db.query(`SHOW COLUMNS FROM products LIKE 'category'`);
+  if (result.length > 0) {
+    return res.status(409).json({
+      message: "category column is already exist ",
+    });
+  }
+
+  await db.query("ALTER TABLE products ADD COLUMN category VARCHAR(100)");
+  return res.status(201).json({
+    message: "category column added successfully",
+  });
+});
+//=============================================================
+// remover category
+
+app.delete("/products/remove/category", async (req, res) => {
+  const [result] = await db.query(`SHOW COLUMNS FROM products LIKE 'category'`);
+  if (result.length === 0) {
+    return res.status(404).json({
+      message: "category column is not exist",
+    });
+  }
+  await db.query("ALTER TABLE products DROP COLUMN category ");
+  res.status(200).json({
+    message: "category column removed successfully",
+  });
+});
+
+//========================================================
+//update price of Bread
+
+app.patch("/api/products/bread", async (req, res) => {
+  const product_name = req.body.product_name;
+  const [result] = await db.query(
+    "SELECT p_name FROM products WHERE p_name=?",
+    [product_name],
+  );
+  if (result.length === 0) {
+    return res.status(404).json({
+      message: "Bread not found",
+    });
+  }
+  await db.query("UPDATE products SET price=25 WHERE p_name=?", [product_name]);
+  return res.status(200).json({
+    message: "update Bread successfuly",
+  });
+});
+//==================================
+app.delete("/api/products/Eggs", async (req, res) => {
+  const p_name = "Eggs";
+  const [result] = await db.query(
+    "SELECT p_name FROM products WHERE p_name=?",
+    [p_name],
+  );
+  if (result.length === 0) {
+    return res.status(404).json({
+      message: "Eggs not found",
+    });
+  }
+  await db.query("DELETE FROM products WHERE p_name=?", [p_name]);
+  return res.status(200).json({
+    message: "delete Eggs successfuly",
+  });
+});
+//===============================================================
+//report for quantity sold
+
+//
+app.get("/reports/sales", async (req, res) => {
+  const [result] = await db.query(`    SELECT 
+      product_id,
+      SUM(quantity_sold) AS total_quantity_sold
+    FROM sales
+    GROUP BY product_id
+`);
+  return res.status(200).json({
+    data: result,
+  });
+});
+
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
