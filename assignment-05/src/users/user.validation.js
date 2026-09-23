@@ -12,9 +12,9 @@ export const signupSchema = joi.object({
   email: joi.string().trim().max(100).email().required(),
   password: joi.string().min(6).max(100).required(),
   age: joi.number().integer().min(18).max(100).required(),
-
   role: joi.string().valid("admin", "user").default("user"),
 });
+
 export const signInSchema = joi.object({
   email: joi.string().trim().max(100).email().required(),
   password: joi.string().min(6).max(100).required(),

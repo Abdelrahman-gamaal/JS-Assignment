@@ -1,16 +1,21 @@
 import express from "express";
-import { signupMiddleware } from "../middlewares/signup.middleware.js";
-import { signInMiddleware } from "../middlewares/signIn.middleware.js";
-import { emailMiddleware } from "../middlewares/email.middleware.js";
+import {
+  signupMiddleware,
+  signInMiddleware,
+  emailMiddleware,
+} from "../middlewares/user.middleware.js";
+
 import {
   signupController,
   signInController,
   upsertUserController,
   searchController,
   userController,
-} from "./user.controller.js";
+} from "./index.js";
+//====================================================
 
 const userRouter = express.Router();
+//====================================================
 
 userRouter.post("/signup", signupMiddleware, signupController);
 userRouter.post("/signin", signInMiddleware, signInController);

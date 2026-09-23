@@ -1,6 +1,5 @@
-import { user } from "./index.js";
-import { post } from "./index.js";
-import { comment } from "./index.js";
+import { user, post, comment } from "./index.js";
+
 user.hasMany(post, {
   foreignKey: "userId",
   onDelete: "CASCADE",

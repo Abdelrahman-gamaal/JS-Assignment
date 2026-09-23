@@ -2,9 +2,14 @@ import { Op } from "sequelize";
 import { AppError } from "../error/AppError.js";
 import { user, post, comment } from "../models/index.js";
 
+//=======================================================
+// add comment
+//=======================================================
+
 export const addCommentService = async (data) => {
-  //checl if post id is exist
+  //check if post id is exist
   console.log(data);
+
   for (const item of data) {
     console.log(item.postId);
     const Post = await post.findByPk(item.postId);
@@ -13,29 +18,42 @@ export const addCommentService = async (data) => {
       throw new AppError("post not found", 404);
     }
   }
+  // check if user is exist
+
   for (const item of data) {
     const User = await user.findByPk(item.userId);
     if (!User) {
       throw new AppError("user not found", 404);
     }
   }
+  // create comment
+
   const Comment = await comment.bulkCreate(data);
   return {
     message: "comments add successfuly",
     data: Comment,
   };
 };
-//comment id  userID post Id
+//=======================================================
+
+//update comment
+//=======================================================
 
 export const updateCommentService = async (commentId, data) => {
-  //check if comment id is exist
+  //check if comment  exist
+
   const commentFound = await comment.findByPk(commentId);
   if (!commentFound) {
     throw new AppError("comment not found", 404);
   }
+
+  // check if the user is the owner of comment
+
   if (commentFound.userId !== data.userId) {
     throw new AppError("You are not the owner of this comment", 403);
   }
+
+  // update commetn
   const afterUpdate = await commentFound.update({
     content: data.content,
   });
@@ -45,6 +63,9 @@ export const updateCommentService = async (commentId, data) => {
   };
 };
 //=========================================================
+// find or create comment
+//=======================================================
+
 export const findOrCreateCommentService = async (data) => {
   //check if user and post exist
 
@@ -57,7 +78,7 @@ export const findOrCreateCommentService = async (data) => {
   if (!postFound) {
     throw new AppError("post not found", 404);
   }
-  //check if comment exist by contetn userId postID
+  //check if comment exist by [content userId postID]
 
   const commentFound = await comment.findOne({
     where: {
@@ -71,22 +92,24 @@ export const findOrCreateCommentService = async (data) => {
     return {
       data: commentFound,
       message: "created : false",
-      statusCode: 200,
+      statusCode: 200, // if exist status code will be 200
     };
   }
-  // if not create comment
+  // create comment
   const newComment = await comment.create(data);
   return {
     data: newComment,
     message: "created : true",
-    statusCode: 201,
+    statusCode: 201, // if not exist create a comment and status code will be 201
   };
 };
 
 //==========================================================
+// search about comment by a word
+//=======================================================
+
 export const searchCommentsByWordService = async (word) => {
   // find comment match this word
-  // count comment match this word
 
   const CommentsMatch = await comment.findAll({
     attributes: ["content"],
@@ -97,11 +120,12 @@ export const searchCommentsByWordService = async (word) => {
     },
   });
 
-  console.log(CommentsMatch);
+  console.log(CommentsMatch); // just for debugging
+
   if (CommentsMatch.length === 0) {
     throw new AppError("no Comments found", 400);
   }
-
+  // count comment match this word
   const count = await comment.count({
     where: {
       content: {
@@ -117,14 +141,20 @@ export const searchCommentsByWordService = async (word) => {
   };
 };
 
-//========================
+//=======================================================
+
+// retrive the 3 recent comment on post
+
+//=======================================================
 
 export const recentCommentsService = async (id) => {
   console.log(1);
+  // find post
   const Post = await post.findByPk(id);
   if (!Post) {
     throw new AppError("no post found", 404);
   }
+  // find comments
   const Comments = await comment.findAll({
     attributes: ["content"],
     where: {
@@ -133,6 +163,7 @@ export const recentCommentsService = async (id) => {
     order: [["createdAt", "DESC"]],
     limit: 3,
   });
+
   console.log(2);
   if (Comments.length === 0) {
     throw new AppError("no comment found", 404);
@@ -140,7 +171,9 @@ export const recentCommentsService = async (id) => {
   return Comments;
 };
 
-//=======================================
+//=======================================================
+//retreive a specific comment
+//=======================================================
 
 export const spicificCommentService = async (commentId) => {
   const result = await comment.findByPk(commentId, {
@@ -153,9 +186,12 @@ export const spicificCommentService = async (commentId) => {
       },
     ],
   });
+
   if (!result) {
     throw new AppError("comment not exist", 404);
   }
 
   return result;
 };
+
+//=======================================================

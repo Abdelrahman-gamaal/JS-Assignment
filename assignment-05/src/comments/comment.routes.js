@@ -1,15 +1,18 @@
 import express from "express";
 const commentRouter = express.Router();
+//=======================================================
+// middleware
+//=======================================================
 
-// middle
 import {
   commentsValidationMiddleware,
   findOrCreateCommentMiddleware,
+  commentContentMiddleware,
 } from "../middlewares/comments.middleware.js";
-
-import { commentContentMiddleware } from "../middlewares/commentContent.Middleware.js";
-
+//=======================================================
 //controller
+//=======================================================
+
 import {
   addCommentController,
   updateCommentController,
@@ -17,11 +20,11 @@ import {
   searchCommentsByWordController,
   recentCommentsController,
   spicificCommentController,
-} from "./comment.controller.js";
+} from "./index.js";
 
 //================================
-
 // route
+//=======================================================
 
 commentRouter.post("/", commentsValidationMiddleware, addCommentController);
 commentRouter.patch("/:id", commentContentMiddleware, updateCommentController);
@@ -34,3 +37,5 @@ commentRouter.get("/search", searchCommentsByWordController);
 commentRouter.get("/newest/:id", recentCommentsController);
 commentRouter.get("/details/:id", spicificCommentController);
 export default commentRouter;
+
+//=======================================================

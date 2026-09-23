@@ -1,5 +1,8 @@
 import { AppError } from "../error/AppError.js";
-import { postSchema } from "../posts/post.validation.js";
+import { postSchema } from "../posts/index.js";
+
+// middleware validation on post request
+
 export const postMiddleware = async (req, res, next) => {
   const { error, value } = postSchema.validate(req.body);
   if (error) {

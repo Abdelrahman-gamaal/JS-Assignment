@@ -5,8 +5,9 @@ import {
   deletePostController,
   allPostsController,
   postsWithCommentsCountController,
-} from "./post.controller.js";
-import { post } from "../models/posts.model.js";
+} from "./index.js";
+
+//==============================================================================
 
 const postRouter = express.Router();
 
